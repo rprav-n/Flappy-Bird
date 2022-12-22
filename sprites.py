@@ -15,7 +15,7 @@ class Spritesheet:
 		return image
 
 class Background():
-	def __init__(self, spritesheet):
+	def __init__(self, spritesheet, BG):
 		self.image = spritesheet.get_image(BG.x, BG.y, BG.width, BG.height)
 		self.image = pg.transform.scale(self.image, (WIDTH, HEIGHT))
 		self.rect = self.image.get_rect(topleft=(0, 0))
@@ -24,21 +24,33 @@ class Background():
 		screen.blit(self.image, self.rect)
 
 class Base(pg.sprite.Sprite):
-	def __init__(self, group, spritesheet):
+	def __init__(self, group, spritesheet, get_dt):
 		super().__init__(group)
 		self.image = spritesheet.get_image(BASE.x, BASE.y, BASE.width, BASE.height)
 		self.image = pg.transform.scale(self.image, (WIDTH*2, 80))
 		self.rect = self.image.get_rect()
 		self.rect.left = 0
 		self.rect.bottom = HEIGHT
+		self.pos = vec(0, 0)
+		self.dir = vec(-1, 0)
+		self.speed = 100
+		self.get_dt = get_dt
+		self.mask = pg.mask.from_surface(self.image)
+	
+	def update(self):
+		self.pos += self.dir * self.speed * self.get_dt()
+		self.rect.x = round(self.pos.x)
+		if self.rect.x < -WIDTH:
+			self.pos.x = 0
+		
 		self.mask = pg.mask.from_surface(self.image)
 	
 class Bird(pg.sprite.Sprite):
-	def __init__(self, group, spritesheet, get_dt):
+	def __init__(self, group, spritesheet, get_dt, pos=(100, HEIGHT/3), is_static=False):
 		super().__init__(group)
 		self.image = spritesheet.get_image(BIRD_1.x, BIRD_1.y, BIRD_1.width, BIRD_1.height)
 		self.image = pg.transform.scale2x(self.image)
-		self.rect = self.image.get_rect(center=(100, HEIGHT/2))
+		self.rect = self.image.get_rect(center=pos)
 
 		# For bird movement
 		self.is_gravity = True
@@ -48,7 +60,8 @@ class Bird(pg.sprite.Sprite):
 		self.vel = BIRD_VEL
 		self.acc = BIRD_ACC
 		self.get_dt = get_dt
-		
+		self.is_static = is_static
+
 
 		# For flap animation
 		self.is_animate = True
@@ -66,6 +79,8 @@ class Bird(pg.sprite.Sprite):
 		self.mask = pg.mask.from_surface(self.image)
 
 	def update(self):
+		if self.is_static:
+			return
 		self.mask = pg.mask.from_surface(self.image)
 		if self.is_gravity:
 			self.vel += self.acc
@@ -132,3 +147,18 @@ class Pipe(pg.sprite.Sprite):
 		self.rect.x = round(self.pos.x)
 		if self.rect.right < 0:
 			self.kill()
+	
+
+
+class Static(pg.sprite.Sprite):
+	def __init__(self, group, spritesheet, pos_type, pos, sprite, sprite_name=""):
+		super().__init__(group)
+		self.image = spritesheet.get_image(sprite.x, sprite.y, sprite.width, sprite.height)
+		if sprite_name == "":
+			self.image = pg.transform.scale2x(self.image)
+		else:
+			self.image = pg.transform.scale(self.image, (WIDTH*2, 80))
+		if pos_type == 1:
+			self.rect = self.image.get_rect(center=pos)
+		if pos_type == 2:
+			self.rect = self.image.get_rect(topleft=pos)
