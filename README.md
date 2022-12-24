@@ -11,7 +11,7 @@ Or Check out the <a href="https://github.com/rprav-n/Flappy-Bird/releases/tag/v1
 <br>
 
 <div align="middle">
-  <img width=500 src="./screenshots/flappybird.png"/>
+  <img width=500 src="./screenshots/demo.gif"/>
 </div>
 
 <br>
